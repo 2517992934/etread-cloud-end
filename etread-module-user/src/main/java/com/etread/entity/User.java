@@ -9,8 +9,8 @@ import java.util.Date;
 @Data
 @TableName("sys_user")
 public class User {
-    @TableId(type = IdType.AUTO)
-    private Long user_id;
+    @TableId(value="user_id", type = IdType.AUTO)
+    private Long userId;
 
     private String password;
 

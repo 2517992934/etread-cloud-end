@@ -64,9 +64,26 @@
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
+        <!-- Redis 依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!--AOP-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- 对象池依赖（Redis 连接池需要） -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
     </dependencies>
 
-    <!-- 4. 版本大管家（子模块引用这些包时，不需要写版本号，全听爸爸的） -->
+    <!-- 4. 版本大管家（子模块引用这些包时，不需要写版本号） -->
     <dependencyManagement>
         <dependencies>
             <!-- Spring Cloud -->

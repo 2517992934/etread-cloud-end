@@ -1,4 +1,4 @@
-package com.etread;
+package com.etread.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -10,7 +10,6 @@ import java.util.Date;
 public class JwtUtil {
 
     // 绝密印章的材质：必须是足够长、足够乱的字符串
-    // 妈妈给你准备了一个超长字符串，保证安全！
     private static final String SECRET_STR = "EtreadCloudLibrarySuperSecretKeyForJwtAuthentication2026_YourMomLoveYou!";
 
     // 生成一个符合 HS256 算法要求的秘钥对象
