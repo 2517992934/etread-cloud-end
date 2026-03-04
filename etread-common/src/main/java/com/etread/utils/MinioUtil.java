@@ -1,5 +1,6 @@
 package com.etread.utils;
 
+import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.UUID;
 
@@ -54,5 +57,32 @@ public class MinioUtil {
                 .bucket(bucket)
                 .object(objectName)
                 .build());
+    }
+    public InputStream getObjectStream(String bucket, String objectName) throws Exception {
+        return minioClient.getObject(GetObjectArgs.builder()
+                .bucket(bucket)
+                .object(objectName)
+                .build());
+    }
+
+    /**
+     * 2. 辅助下载方法：下载到本地临时文件
+     * 适合 TXT：RandomAccessFile 需要本地物理文件
+     */
+    public File downloadToTemp(String bucket, String objectName) throws Exception {
+        // 在系统临时目录创建一个文件
+        File tempFile = File.createTempFile("etread-download-", ".tmp");
+
+        try (InputStream is = getObjectStream(bucket, objectName);
+             FileOutputStream fos = new FileOutputStream(tempFile)) {
+
+            // 使用 Apache Commons IO 的 IOUtils.copy(is, fos); 或者手动流拷贝
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+            }
+        }
+        return tempFile;
     }
 }

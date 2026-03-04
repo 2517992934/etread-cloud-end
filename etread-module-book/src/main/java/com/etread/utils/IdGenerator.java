@@ -1,6 +1,14 @@
 package com.etread.utils;
 
-public class ChapterIdGenerator {
+import java.util.concurrent.ThreadLocalRandom;
+
+public class IdGenerator {
+    /**
+     * 生成书名6位id
+     */
+    public static Long generateId() {
+        return ThreadLocalRandom.current().nextLong(100_000, 1_000_000);
+    }
 
     /**
      * 生成 ChapterID
@@ -9,7 +17,7 @@ public class ChapterIdGenerator {
      * @param currentSort 当前排序号 (int)，如 100, 200, 300...
      * @return 生成的 10 位左右的 Long ID
      */
-    public static Long generate(Long bookId, int currentSort) {
+    public static Long generatechapterid(Long bookId, int currentSort) {
         if (bookId == null) {
             throw new IllegalArgumentException("BookID cannot be null");
         }

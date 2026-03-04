@@ -6,5 +6,4 @@ import com.etread.entity.BookChapter;
 import java.util.List;
 
 public interface BookChapterService extends IService<BookChapter> {
-   String addBookChapter(List<BookChapter> bookChapters);
 }

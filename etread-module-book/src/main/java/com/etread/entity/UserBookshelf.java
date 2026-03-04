@@ -7,7 +7,6 @@ import java.util.Date;
 @Data
 @TableName("user_bookshelf")
 public class UserBookshelf {
-    @TableId(type = IdType.AUTO)
     private Long id;
     
     private Long userId;

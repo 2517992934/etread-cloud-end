@@ -1,20 +1,20 @@
 package com.etread.component; // 建议放在 component 包下
 
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.etread.entity.BookChapter;
 import com.etread.entity.BookChapterContent;
-import com.etread.service.IBookChapterContentService;
-import com.etread.service.IBookChapterService;
+
+
 import com.etread.parser.BookParser;
 import com.etread.parser.ChapterMetadata;
 import com.etread.parser.impl.EpubBookParser;
-import com.etread.utils.ChapterIdGenerator;
+import com.etread.service.BookChapterContentService;
+import com.etread.service.BookChapterService;
+import com.etread.utils.IdGenerator;
 import com.etread.utils.HtmlContentUtil;
 import nl.siegmann.epublib.domain.Book;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,11 +28,11 @@ import java.util.List;
 public class BookBatchProcessor {
 
     @Autowired private HtmlContentUtil htmlContentUtil;
-    @Autowired private ChapterIdGenerator chapterIdGenerator;
-    @Autowired private IBookChapterService bookChapterService;
-    @Autowired private IBookChapterContentService bookChapterContentService;
+    @Autowired private IdGenerator idGenerator;
+    @Autowired private BookChapterService bookChapterService;
+    @Autowired private BookChapterContentService bookChapterContentService;
 
-    public void processBatch(MultipartFile file, List<ChapterMetadata> batch, Long bookId,
+    public void processBatch(File file, List<ChapterMetadata> batch, Long bookId,
                              BookParser parser, Book epubBook, int startSortOrder, int step) {
 
         List<BookChapter> chapters = new ArrayList<>();
@@ -52,7 +52,7 @@ public class BookBatchProcessor {
             String finalHtml = htmlContentUtil.injectMd5ToHtml(rawHtml);
 
             // 3. 组装实体
-            long chapterId = chapterIdGenerator.generate(bookId,currentSort);
+            long chapterId = idGenerator.generatechapterid(bookId,currentSort);
 
             BookChapter chapter = new BookChapter();
             chapter.setId(chapterId);

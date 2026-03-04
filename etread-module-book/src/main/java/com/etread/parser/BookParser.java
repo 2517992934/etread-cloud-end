@@ -10,9 +10,9 @@ import java.util.List;
 
 public interface BookParser {
     // 快速扫描目录结构
-    List<ChapterMetadata> parseChapterList(MultipartFile file);
+    List<ChapterMetadata> parseChapterList(File file);
     // 解析具体章节内容 (HTML格式)
-    String parseContent(MultipartFile file, ChapterMetadata metadata, Long bookId);
+    String parseContent(File file, ChapterMetadata metadata, Long bookId);
     String parseContent(Book book, ChapterMetadata metadata, Long bookId);
 }
 

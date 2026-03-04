@@ -10,4 +10,5 @@ import com.etread.entity.BookInfo;
  */
 public interface BookInfoService extends IService<BookInfo> {
     boolean updateStatus(BookInfoDTO bookInfo);
+
 }

@@ -16,4 +16,5 @@ public class BookUploadDTO {
     private MultipartFile cover;
     private String description;    // 简介
     private String status;         //状态
+    private String publisher;      //上传人id
 }

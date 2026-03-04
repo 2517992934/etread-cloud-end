@@ -45,7 +45,7 @@ public class BookParseServiceImpl implements BookParseService {
     @Override
     public void parseBookConcurrently(BookInfoDTO bookInfoDTO) {
         String filename = bookInfoDTO.getFilename();
-        MultipartFile file = bookInfoDTO.getFile();
+        File file = bookInfoDTO.getFile();
         Long bookId =bookInfoDTO.getBookid();
 
         // 1. 准备工作
