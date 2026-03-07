@@ -1,10 +1,11 @@
 package com.etread.utils;
 
-import io.minio.GetObjectArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
+import io.minio.*;
+import io.minio.messages.DeleteError;
+import io.minio.messages.DeleteObject;
+import io.minio.messages.Item;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,9 +14,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class MinioUtil {
     @Value("${minio.endpoint}") private String endpoint;
     @Value("${minio.accessKey}") private String accessKey;
@@ -84,5 +88,51 @@ public class MinioUtil {
             }
         }
         return tempFile;
+    }
+    public void removeFolder(String bucket, String folderPrefix) throws Exception {
+        // 1. 🌟 安全第一：确保前缀以 '/' 结尾！
+        if (!folderPrefix.endsWith("/")) {
+            folderPrefix += "/";
+        }
+
+        log.info("准备清空 MinIO 文件夹: {}/{}", bucket, folderPrefix);
+
+        // 2. 查出这个前缀下的所有文件 (recursive=true 表示包括子文件夹里的文件)
+        Iterable<Result<Item>> results = minioClient.listObjects(
+                ListObjectsArgs.builder()
+                        .bucket(bucket)
+                        .prefix(folderPrefix)
+                        .recursive(true)
+                        .build()
+        );
+
+        // 3. 把它们打包成一个个“死亡名单”
+        List<DeleteObject> deleteObjects = new LinkedList<>();
+        for (Result<Item> result : results) {
+            Item item = result.get();
+            deleteObjects.add(new DeleteObject(item.objectName()));
+        }
+
+        // 如果里面本来就是空的，就直接收工回家啦
+        if (deleteObjects.isEmpty()) {
+            log.info("文件夹本来就是空的，不需要打扫哦！");
+            return;
+        }
+
+        // 4. 批量执行“死刑” (这比一次次调 removeObject 快 100 倍！)
+        Iterable<Result<DeleteError>> errors = minioClient.removeObjects(
+                RemoveObjectsArgs.builder()
+                        .bucket(bucket)
+                        .objects(deleteObjects)
+                        .build()
+        );
+
+        // 5. 检查有没有哪些顽固分子没删掉
+        for (Result<DeleteError> errorResult : errors) {
+            DeleteError error = errorResult.get();
+            log.error("哎呀，删除失败了: " + error.objectName() + "，原因: " + error.message());
+        }
+
+        log.info("✅ 文件夹打扫完毕！共清理了 {} 个文件。", deleteObjects.size());
     }
 }

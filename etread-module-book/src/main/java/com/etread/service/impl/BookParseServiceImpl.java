@@ -40,7 +40,6 @@ public class BookParseServiceImpl implements BookParseService {
     @Autowired private ParserFactory parserFactory;
     @Autowired private BookBatchProcessor batchProcessor; // 注入咱们的苦力工头
     @Autowired private BookInfoServiceImpl bookInfoService;  // 注入书籍信息Service用来更新状态
-    @Autowired private MultipartFile multipartFile;
 
     @Override
     public void parseBookConcurrently(BookInfoDTO bookInfoDTO) {
@@ -54,7 +53,7 @@ public class BookParseServiceImpl implements BookParseService {
 
         Book epubBook = null;
         if(filename.toLowerCase().endsWith(".epub")) {
-            try (InputStream inputStream = multipartFile.getInputStream()) {
+            try (InputStream inputStream = new FileInputStream(file)) {
 
                 // EpubReader 很聪明，它能直接读 InputStream
                 epubBook = new EpubReader().readEpub(inputStream);
@@ -107,7 +106,6 @@ public class BookParseServiceImpl implements BookParseService {
             error.setStatus(2);
             error.setError_msg(e.getMessage());
             bookInfoService.updateStatus(error);
-            bookInfoService.updateStatus(error); // 失败
             throw new RuntimeException("服务器出现错误，请稍后再试");
         }
     }

@@ -21,6 +21,7 @@
     <modules>
         <module>etread-module-user</module>
         <module>etread-common</module>
+        <module>etread-module-book</module>
     </modules>
 
     <properties>

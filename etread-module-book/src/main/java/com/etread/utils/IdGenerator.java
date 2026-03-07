@@ -1,7 +1,9 @@
 package com.etread.utils;
 
-import java.util.concurrent.ThreadLocalRandom;
+import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ThreadLocalRandom;
+@Component
 public class IdGenerator {
     /**
      * 生成书名6位id

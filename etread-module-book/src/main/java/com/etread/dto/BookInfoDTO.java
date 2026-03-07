@@ -9,6 +9,7 @@ import java.util.List;
 public class BookInfoDTO {
     private Long bookid;
     private File file;// 上传的原始文件 (TXT/EPUB)
+    private MultipartFile cover;
     private String filename;
     private String title;          // 书名
     private String author;         // 作者 (可选)

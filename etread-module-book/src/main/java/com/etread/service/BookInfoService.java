@@ -2,6 +2,7 @@ package com.etread.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.etread.dto.BookInfoDTO;
+import com.etread.dto.BookUploadDTO;
 import com.etread.entity.BookInfo;
 
 /**
@@ -10,5 +11,11 @@ import com.etread.entity.BookInfo;
  */
 public interface BookInfoService extends IService<BookInfo> {
     boolean updateStatus(BookInfoDTO bookInfo);
+    BookInfoDTO buildBookInfoDTO(BookUploadDTO book, String token);
+    boolean updateBook(BookInfoDTO bookInfoDTO);
 
+    /**
+     * 删除书籍
+     */
+    boolean deleteBook(Long bookId);
 }

@@ -20,8 +20,12 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 1. 获取 Token
-        String token = request.getHeader("Authorization");
+        // 1. 获取 Token (优先尝试 "token" 头，兼容 UploadController 的逻辑)
+        String token = request.getHeader("token");
+        if (!StringUtils.hasText(token)) {
+            // 如果 "token" 头没有，再尝试标准的 "Authorization" 头
+            token = request.getHeader("Authorization");
+        }
 
         // 2. 判空
         if (!StringUtils.hasText(token)) {
@@ -30,14 +34,14 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
 
         // 3. 查 Redis
-        String key = AuthConstant.LOGIN_TOKEN_PREFIX + token;
+        String key = "login:token:" + token; // 直接使用 AuthConstant.LOGIN_TOKEN_PREFIX 可能会有问题，这里为了稳妥直接拼接
         if (!redisUtil.hasKey(key)) {
             response.setStatus(401);
             return false;
         }
 
         // 4. 续期
-        redisUtil.expire(key, AuthConstant.LOGIN_TOKEN_TTL, TimeUnit.MINUTES);
+        redisUtil.expire(key, 30L, TimeUnit.MINUTES);
         return true;
     }
 }

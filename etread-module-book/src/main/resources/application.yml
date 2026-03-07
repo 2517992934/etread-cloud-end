@@ -1,3 +1,8 @@
+debug: true
+
+server:
+  port: 8082 # 指定运行端口
+
 spring:
   application:
     name: etread-module-book
