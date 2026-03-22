@@ -15,6 +15,7 @@ import nl.siegmann.epublib.domain.Book;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.List;
  * 职责：处理单个批次的 解析 -> 转换 -> 入库
  */
 @Component
+@Transactional(rollbackFor = Exception.class)
 public class BookBatchProcessor {
 
     @Autowired private HtmlContentUtil htmlContentUtil;

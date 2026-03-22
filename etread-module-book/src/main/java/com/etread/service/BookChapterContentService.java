@@ -10,4 +10,8 @@ public interface BookChapterContentService extends IService<BookChapterContent> 
      * 根据章节ID列表批量删除内容
      */
     boolean removeByChapterIds(List<Long> chapterIds);
+
+    List<BookChapterContent> listByBookIdPrefix(Long bookId);
+
+    List<BookChapterContent> listByChapterIds(List<Long> chapterIds);
 }

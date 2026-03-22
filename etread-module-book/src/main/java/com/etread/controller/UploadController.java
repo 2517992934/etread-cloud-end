@@ -7,6 +7,8 @@ import com.etread.dto.BookUploadDTO;
 import com.etread.service.impl.BookChapterServiceImpl;
 import com.etread.service.impl.BookInfoServiceImpl;
 import com.etread.service.impl.BookParseServiceImpl;
+
+import com.etread.service.impl.UserBookshelfServiceImpl;
 import com.etread.vo.UploadVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,20 +22,22 @@ public class UploadController {
     @Autowired private BookInfoServiceImpl bookInfoService;
     @Autowired private BookParseServiceImpl bookParseService;
     @Autowired private Tokencheck tokencheck;
-    @Autowired
-    private BookChapterServiceImpl bookChapterServiceImpl;
+    @Autowired private BookChapterServiceImpl bookChapterServiceImpl;
+    @Autowired private UserBookshelfServiceImpl userBookshelfServiceImpl;
 
     @PostMapping("/upload")
     public Result<UploadVO> uploadet(@RequestHeader("token") String token,BookUploadDTO uploadDTO) {
        BookInfoDTO bookInfoDTO=bookInfoService.buildBookInfoDTO(uploadDTO,token);
        if(bookInfoDTO!=null){
            bookParseService.parseBookConcurrently(bookInfoDTO);
+           //把书加入上传者书架
+           userBookshelfServiceImpl.addToShelf(uploadDTO.getPublisher(),bookInfoDTO.getBookid());
            UploadVO uploadVO=new UploadVO();
-           uploadVO.setUpload_message("上传成功！");
+           uploadVO.setBookInfo(bookInfoDTO);
+           uploadVO.setBookChapter(bookChapterServiceImpl.listByBookIdPrefix(bookInfoDTO.getBookid()));
            return Result.success("上传成功",uploadVO);
        }else{
            UploadVO uploadVO=new UploadVO();
-           uploadVO.setUpload_message("上传失败，请重试");
            return Result.error("上传失败");
        }
     }
@@ -43,8 +47,8 @@ public class UploadController {
             if(tokencheck.checkToken(token,bookInfoDTO.getBookid())){
                 bookInfoService.deleteBook(bookInfoDTO.getBookid());
                 bookChapterServiceImpl.removeByBookId(bookInfoDTO.getBookid());
+
                 UploadVO uploadVO=new UploadVO();
-                uploadVO.setUpload_message("删除成功！");
                 return Result.success("删除成功",uploadVO);
             }else{
                 throw new RuntimeException("只有上传者有权删除书");
@@ -52,7 +56,6 @@ public class UploadController {
 
         }else{
             UploadVO uploadVO=new UploadVO();
-            uploadVO.setUpload_message("数据错误");
             return Result.error("数据错误");
         }
 
@@ -63,16 +66,14 @@ public class UploadController {
             if(tokencheck.checkToken(token,bookInfoDTO.getBookid())){
                 bookInfoService.updateBook(bookInfoDTO);
                 UploadVO uploadVO=new UploadVO();
-                uploadVO.setUpload_message("更新成功！");
                 return Result.success("更新成功",uploadVO);
             }else{
                 UploadVO uploadVO=new UploadVO();
-                uploadVO.setUpload_message("认证错误");
+
                 return Result.error("认证错误");
             }
         }else{
             UploadVO uploadVO=new UploadVO();
-            uploadVO.setUpload_message("数据错误");
             return Result.error("数据错误");
         }
     }

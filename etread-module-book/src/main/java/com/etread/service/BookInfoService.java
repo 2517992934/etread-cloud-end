@@ -18,4 +18,8 @@ public interface BookInfoService extends IService<BookInfo> {
      * 删除书籍
      */
     boolean deleteBook(Long bookId);
+    /**
+     * 根据书的id统计字数
+     */
+    long countwordbyBookId(Long bookId);
 }

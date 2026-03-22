@@ -22,6 +22,9 @@ public class BookChapterServiceImpl extends ServiceImpl<BookChapterMapper, BookC
 
     @Autowired
     private BookChapterContentService bookChapterContentService;
+    @Autowired
+    private BookChapterMapper bookChapterMapper;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -50,4 +53,25 @@ public class BookChapterServiceImpl extends ServiceImpl<BookChapterMapper, BookC
         
         return true;
     }
+    //find chapter by bookid(same to content)
+    @Override
+    public List<BookChapter> listByBookIdPrefix(Long bookId) {
+        String bookIdStr = String.valueOf(bookId);
+        String prefix;
+        if (bookIdStr.length() >= 6) {
+            prefix = bookIdStr.substring(0, 6);
+        } else {
+            prefix = String.format("%-6s", bookIdStr).replace(' ', '0');
+        }
+
+        long prefixNum = Long.parseLong(prefix);
+        long start = prefixNum * 10000L;
+        long end = start + 9999L;
+
+        return this.lambdaQuery()
+                .between(BookChapter::getId, start, end)
+                .orderByAsc(BookChapter::getSortOrder)
+                .list();
+    }
+
 }

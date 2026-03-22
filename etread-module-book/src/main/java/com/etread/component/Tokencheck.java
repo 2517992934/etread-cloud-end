@@ -16,11 +16,11 @@ public class Tokencheck {
     public boolean checkToken(String token, Long bookid) {
       String fullKey = "login:token:" + token;
       String userJson = redisUtil.get(fullKey);
-      String publisher =bookInfoMapper.selectById(bookid).getPublisher();
+      Long publisher =bookInfoMapper.selectById(bookid).getPublisher();
 
       if (userJson != null) {
           UserDTO userDTO = JSON.parseObject(userJson, UserDTO.class);
-          if (userDTO.getAccount().equals(publisher)) {
+          if (userDTO.getUser_id().equals(publisher)) {
               return true;
           }else {
               return false;

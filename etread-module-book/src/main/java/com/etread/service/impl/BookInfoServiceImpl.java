@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.etread.dto.BookInfoDTO;
 import com.etread.dto.BookUploadDTO;
 import com.etread.dto.UserDTO;
+import com.etread.entity.BookChapter;
 import com.etread.entity.BookInfo;
 import com.etread.entity.BookTag;
 import com.etread.entity.BookTagRelation;
+import com.etread.mapper.BookChapterMapper;
 import com.etread.mapper.BookInfoMapper;
 import com.etread.mapper.BookTagMapper;
 import com.etread.mapper.BookTagRelationMapper;
@@ -27,7 +29,12 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -44,6 +51,8 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
 
     @Autowired
     private BookChapterService bookChapterService;
+    @Autowired
+    private BookChapterMapper bookChapterMapper;
 
     @Override
     public boolean updateStatus(BookInfoDTO bookInfo) {
@@ -71,7 +80,7 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
             String userJson = redisUtil.get(fullKey);
             if (userJson != null) {
                 UserDTO userDTO = JSON.parseObject(userJson, UserDTO.class);
-                String account = userDTO.getAccount();
+                Long account = userDTO.getUser_id();
                 book.setPublisher(account);
             } else {
                 throw new RuntimeException("token 不存在或已过期");
@@ -159,34 +168,60 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
 
     /**
      * 私有方法：保存标签并建立关联
-     * 解决问题1：标签存储
+     * 标签存储
      */
     private void saveTags(Long bookId, List<String> tags) {
-        if (tags == null || tags.isEmpty()) return;
+        List<String> allowedTags = filterAllowedTags(tags);
+        if (allowedTags.isEmpty()) return;
 
-        for (String tagName : tags) {
-            // 1. 查询标签是否存在
-            LambdaQueryWrapper<BookTag> query = new LambdaQueryWrapper<>();
-            query.eq(BookTag::getTagName, tagName);
-            BookTag bookTag = bookTagMapper.selectOne(query);
+        LambdaQueryWrapper<BookTag> query = new LambdaQueryWrapper<>();
+        query.in(BookTag::getTagName, allowedTags);
+        List<BookTag> tagRows = bookTagMapper.selectList(query);
+        Map<String, Long> tagNameToId = tagRows.stream()
+                .collect(Collectors.toMap(BookTag::getTagName, BookTag::getId, (a, b) -> a));
 
-            // 2. 如果不存在，先创建标签
-            if (bookTag == null) {
-                bookTag = new BookTag();
-                bookTag.setTagName(tagName);
-                bookTagMapper.insert(bookTag);
+        for (String tagName : allowedTags) {
+            Long tagId = tagNameToId.get(tagName);
+            if (tagId == null) {
+                continue;
             }
-
-            // 3. 建立书籍与标签的关联
             BookTagRelation relation = new BookTagRelation();
             relation.setBookId(bookId);
-            relation.setTagId(bookTag.getId());
+            relation.setTagId(tagId);
             bookTagRelationMapper.insert(relation);
         }
     }
 
+    private List<String> filterAllowedTags(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<String> normalized = new ArrayList<>(new LinkedHashSet<>(
+                tags.stream()
+                        .filter(t -> t != null && !t.trim().isEmpty())
+                        .map(String::trim)
+                        .collect(Collectors.toList())
+        ));
+
+        if (normalized.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        LambdaQueryWrapper<BookTag> query = new LambdaQueryWrapper<>();
+        query.in(BookTag::getTagName, normalized).select(BookTag::getTagName);
+        List<BookTag> existRows = bookTagMapper.selectList(query);
+        Set<String> existNames = existRows.stream()
+                .map(BookTag::getTagName)
+                .collect(Collectors.toSet());
+
+        return normalized.stream()
+                .filter(existNames::contains)
+                .collect(Collectors.toList());
+    }
+
     /**
-     * 解决问题3：书籍基本信息修改
+     * 书籍基本信息修改
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -209,7 +244,8 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
 
         // 更新冗余字段
         if (dto.getTags() != null) {
-            bookInfo.setTags(String.join(",", dto.getTags()));
+            List<String> allowedTags = filterAllowedTags(dto.getTags());
+            bookInfo.setTags(String.join(",", allowedTags));
         }
 
         // 处理封面更新
@@ -280,8 +316,8 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
         BookInfo bookInfo = new BookInfo();
         bookInfo.setTitle(book.getTitle());
         bookInfo.setAuthor(book.getAuthor());
-        // 将 List<String> 转换为逗号分隔的字符串
-        bookInfo.setTags(String.join(",", book.getTags()));
+        List<String> allowedTags = filterAllowedTags(book.getTags());
+        bookInfo.setTags(String.join(",", allowedTags));
         bookInfo.setDescription(book.getDescription());
         bookInfo.setPublisher(book.getPublisher());
         bookInfo.setStatus(0);
@@ -292,7 +328,7 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
         BookInfoDTO bookInfoDTO = new BookInfoDTO();
         bookInfoDTO.setTitle(book.getTitle());
         bookInfoDTO.setAuthor(book.getAuthor());
-        bookInfoDTO.setTags(book.getTags()); // 保持 List<String>
+        bookInfoDTO.setTags(filterAllowedTags(book.getTags()));
         bookInfoDTO.setDescription(book.getDescription());
         bookInfoDTO.setStatus(0);
         return bookInfoDTO;
@@ -370,5 +406,16 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
         } catch (Exception e) {
             throw new RuntimeException("换封面失败啦！", e);
         }
+    }
+    //word count
+    @Override
+    public long countwordbyBookId(Long bookId) {
+        Long total = bookChapterMapper.sumWordCountByBookId(bookId);
+        long wordCount = total == null ? 0L : total;
+        this.lambdaUpdate()
+                .eq(BookInfo::getId, bookId)
+                .set(BookInfo::getWordCount, Math.toIntExact(wordCount))
+                .update();
+        return wordCount;
     }
 }

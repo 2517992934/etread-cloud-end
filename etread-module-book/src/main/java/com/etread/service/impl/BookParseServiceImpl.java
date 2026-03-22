@@ -94,6 +94,8 @@ public class BookParseServiceImpl implements BookParseService {
         // 4. 等待结果并收尾
         try {
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            bookInfoService.countwordbyBookId(bookId);
+
             BookInfoDTO success = new BookInfoDTO();
             success.setBookid(bookId);
             success.setStatus(1);
