@@ -22,6 +22,7 @@
         <module>etread-module-user</module>
         <module>etread-common</module>
         <module>etread-module-book</module>
+        <module>etread-module-comment</module>
     </modules>
 
     <properties>

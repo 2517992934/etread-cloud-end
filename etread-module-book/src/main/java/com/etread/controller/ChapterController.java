@@ -6,6 +6,7 @@ import com.etread.entity.BookChapter;
 import com.etread.entity.BookChapterContent;
 import com.etread.service.BookChapterContentService;
 import com.etread.service.BookChapterService;
+import com.etread.service.ReadAheadPrewarmService;
 import com.etread.vo.ChapterSyncVO;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/chapter")
+@RequestMapping("/book")
 public class ChapterController {
 
     @Autowired
@@ -27,7 +28,10 @@ public class ChapterController {
     @Autowired
     private BookChapterContentService bookChapterContentService;
 
-    @PostMapping("/catalog")
+    @Autowired
+    private ReadAheadPrewarmService readAheadPrewarmService;
+
+    @PostMapping("/chapter/catalog")
     public Result<ChapterSyncVO> catalog(@RequestHeader("token") String token, BookChapterSyncDTO bookChapterSyncDTO) {
         if (bookChapterSyncDTO.getBookId() == null || bookChapterSyncDTO.getBookId() == null) {
             return Result.error("bookId 不能为空");
@@ -38,15 +42,16 @@ public class ChapterController {
         return Result.success("请求成功", chapterSyncVO);
     }
 
-    @PostMapping("/contents")
+    @PostMapping("/chapter/contents")
     public Result<ChapterSyncVO> contents(@RequestHeader("token") String token, BookChapterSyncDTO bookChapterSyncDTO) {
         if (bookChapterSyncDTO == null || bookChapterSyncDTO.getChapterIds() == null || bookChapterSyncDTO.getChapterIds().isEmpty()) {
             return Result.error("chapterIds 不能为空"+bookChapterSyncDTO.getChapterIds());
         }
         List<BookChapterContent> contents = bookChapterContentService.listByChapterIds(bookChapterSyncDTO.getChapterIds());
+        //根据当前请求的章节列表，后台异步预加载后续章节内容，提升下一次阅读速度
+        readAheadPrewarmService.prewarmNextChaptersAsync(bookChapterSyncDTO.getChapterIds());
         ChapterSyncVO chapterSyncVO = new ChapterSyncVO();
         chapterSyncVO.setContents(contents);
         return Result.success("请求成功", chapterSyncVO);
     }
 }
-

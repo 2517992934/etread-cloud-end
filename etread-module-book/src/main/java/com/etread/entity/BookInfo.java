@@ -23,6 +23,10 @@ public class BookInfo {
     private Integer status;
     private String errorMsg;
     private Integer wordCount;
+
+    private Integer totalScore;
+
+    private Integer ratingCount;
     
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
