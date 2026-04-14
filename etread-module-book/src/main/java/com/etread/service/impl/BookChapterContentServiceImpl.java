@@ -5,13 +5,22 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.etread.entity.BookChapterContent;
 import com.etread.mapper.BookChapterContentMapper;
 import com.etread.service.BookChapterContentService;
+import com.etread.utils.RedisUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class BookChapterContentServiceImpl extends ServiceImpl<BookChapterContentMapper, BookChapterContent> implements BookChapterContentService {
-
+    private static final String CHAPTER_CONTENT_KEY = "book:chapter:content:%s";
+    private static final long CHAPTER_CONTENT_TTL = 10L;
+    @Autowired
+    private RedisUtil redisUtil;
     @Override
     public boolean removeByChapterIds(List<Long> chapterIds) {
         if (chapterIds == null || chapterIds.isEmpty()) {
@@ -47,8 +56,59 @@ public class BookChapterContentServiceImpl extends ServiceImpl<BookChapterConten
         if (chapterIds == null || chapterIds.isEmpty()) {
             return List.of();
         }
-        return this.lambdaQuery()
-                .in(BookChapterContent::getChapterId, chapterIds)
-                .list();
+
+        Map<Long, BookChapterContent> resultMap = new LinkedHashMap<>();
+        List<Long> missIds = new ArrayList<>();
+
+        // 1. 先查 Redis
+        for (Long chapterId : chapterIds) {
+            if (chapterId == null) {
+                continue;
+            }
+            String key = String.format(CHAPTER_CONTENT_KEY, chapterId);
+            String cachedContent = redisUtil.get(key);
+            if (cachedContent != null) {
+                BookChapterContent content = new BookChapterContent();
+                content.setChapterId(chapterId);
+                content.setContent(cachedContent);
+                resultMap.put(chapterId, content);
+            } else {
+                missIds.add(chapterId);
+            }
+        }
+
+        // 2. Redis 没命中的，再查数据库
+        if (!missIds.isEmpty()) {
+            List<BookChapterContent> dbContents = this.lambdaQuery()
+                    .in(BookChapterContent::getChapterId, missIds)
+                    .list();
+
+            if (dbContents != null && !dbContents.isEmpty()) {
+                for (BookChapterContent content : dbContents) {
+                    if (content.getChapterId() == null) {
+                        continue;
+                    }
+
+                    resultMap.put(content.getChapterId(), content);
+
+                    // 3. 回填 Redis
+                    if (content.getContent() != null) {
+                        String key = String.format(CHAPTER_CONTENT_KEY, content.getChapterId());
+                        redisUtil.set(key, content.getContent(), CHAPTER_CONTENT_TTL, TimeUnit.MINUTES);
+                    }
+                }
+            }
+        }
+
+        // 4. 按传入顺序返回
+        List<BookChapterContent> result = new ArrayList<>();
+        for (Long chapterId : chapterIds) {
+            BookChapterContent content = resultMap.get(chapterId);
+            if (content != null) {
+                result.add(content);
+            }
+        }
+
+        return result;
     }
 }

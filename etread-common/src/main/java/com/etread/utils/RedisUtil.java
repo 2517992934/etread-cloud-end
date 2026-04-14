@@ -31,5 +31,4 @@ public class RedisUtil {
     public Boolean expire(String key, long timeout, TimeUnit unit) {
         return stringRedisTemplate.expire(key, timeout, unit);
     }
-
 }

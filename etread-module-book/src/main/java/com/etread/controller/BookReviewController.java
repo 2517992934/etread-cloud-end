@@ -29,7 +29,7 @@ public class BookReviewController {
 
     @Autowired
     private BookUserResolver bookUserResolver;
-
+    //打分计入书本信息由触发器完成
     @PostMapping("/review/add")
     public Result<BookReview> add(@RequestHeader("token") String token,
                                   BookReviewAddReq req) {

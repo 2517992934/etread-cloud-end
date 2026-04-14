@@ -1,7 +1,9 @@
 package com.etread.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.etread.dto.BookInfoDTO;
+import com.etread.dto.BookSearchDTO;
 import com.etread.dto.BookUploadDTO;
 import com.etread.entity.BookInfo;
 
@@ -22,4 +24,5 @@ public interface BookInfoService extends IService<BookInfo> {
      * 根据书的id统计字数
      */
     long countwordbyBookId(Long bookId);
+    Page<BookInfo> searchBook(BookSearchDTO bookSearchDTO, int page,int size);
 }

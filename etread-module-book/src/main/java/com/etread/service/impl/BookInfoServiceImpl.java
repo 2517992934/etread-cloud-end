@@ -1,8 +1,10 @@
 package com.etread.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.etread.dto.BookInfoDTO;
+import com.etread.dto.BookSearchDTO;
 import com.etread.dto.BookUploadDTO;
 import com.etread.dto.UserDTO;
 import com.etread.entity.BookChapter;
@@ -24,7 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson2.JSON;
-
+import org.apache.ibatis.annotations.Select;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
@@ -53,6 +55,8 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
     private BookChapterService bookChapterService;
     @Autowired
     private BookChapterMapper bookChapterMapper;
+    @Autowired
+    private BookInfoMapper bookInfoMapper;
 
     @Override
     public boolean updateStatus(BookInfoDTO bookInfo) {
@@ -113,6 +117,8 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
         bookInfo.setOriginalFileUrl(fileUrl);
         bookInfo.setCoverUrl(coverUrl);
         bookInfo.setId(bookid);
+        bookInfo.setTotalScore(0);
+        bookInfo.setRatingCount(0);
         this.save(bookInfo);
         saveTags(bookid, book.getTags());
         // 4. 准备返回结果
@@ -417,5 +423,15 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
                 .set(BookInfo::getWordCount, Math.toIntExact(wordCount))
                 .update();
         return wordCount;
+    }
+    //书籍搜索方法实现
+    @Override
+    public Page<BookInfo> searchBook(BookSearchDTO bookSearchDTO, int page, int size){
+        if (bookSearchDTO.getTags() != null && !bookSearchDTO.getTags().isEmpty()) {
+            bookSearchDTO.setTagCount(bookSearchDTO.getTags().size());
+        }
+        Page<BookInfo> p = new Page<>(page, size);
+        bookInfoMapper.searchBooks(p, bookSearchDTO);
+        return p;
     }
 }

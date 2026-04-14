@@ -51,7 +51,7 @@ public class BookReviewServiceImpl implements BookReviewService {
         Page<BookReview> p = new Page<>(page, size);
         LambdaQueryWrapper<BookReview> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BookReview::getBookId, bookId)
-                .orderByDesc(BookReview::getCreateTime, BookReview::getId);
+                .orderByDesc(BookReview::getLikeCount);
         return bookReviewMapper.selectPage(p, wrapper);
     }
 }
