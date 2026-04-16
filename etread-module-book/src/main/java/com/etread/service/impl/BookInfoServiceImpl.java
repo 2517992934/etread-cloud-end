@@ -434,4 +434,9 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
         bookInfoMapper.searchBooks(p, bookSearchDTO);
         return p;
     }
+    @Override
+    public BookInfo getBookById(Long bookId){
+        BookInfo bookInfo = bookInfoMapper.selectById(bookId);
+        return bookInfo;
+    }
 }

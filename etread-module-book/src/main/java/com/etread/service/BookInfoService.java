@@ -25,4 +25,5 @@ public interface BookInfoService extends IService<BookInfo> {
      */
     long countwordbyBookId(Long bookId);
     Page<BookInfo> searchBook(BookSearchDTO bookSearchDTO, int page,int size);
+    BookInfo getBookById(Long bookId);
 }

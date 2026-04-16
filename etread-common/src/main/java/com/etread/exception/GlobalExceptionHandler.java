@@ -20,7 +20,6 @@ public class GlobalExceptionHandler {
         // 1. 记录错误日志 (存到文件里)
         log.error("系统出错了: ", e);
 
-        // 2. 返回漂亮的 JSON 给前端
         return Result.error("服务器错误: " + e.getMessage());
     }
 

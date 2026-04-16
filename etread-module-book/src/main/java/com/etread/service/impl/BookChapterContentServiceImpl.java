@@ -71,6 +71,7 @@ public class BookChapterContentServiceImpl extends ServiceImpl<BookChapterConten
                 BookChapterContent content = new BookChapterContent();
                 content.setChapterId(chapterId);
                 content.setContent(cachedContent);
+                
                 resultMap.put(chapterId, content);
             } else {
                 missIds.add(chapterId);

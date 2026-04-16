@@ -29,14 +29,14 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         // 2. 判空
         if (!StringUtils.hasText(token)) {
-            response.setStatus(401);
+            writeUnauthorizedResponse(response,"未登录，请先登录哦");
             return false;
         }
 
         // 3. 查 Redis
         String key = "login:token:" + token; // 直接使用 AuthConstant.LOGIN_TOKEN_PREFIX 可能会有问题，这里为了稳妥直接拼接
         if (!redisUtil.hasKey(key)) {
-            response.setStatus(401);
+            writeUnauthorizedResponse(response,"抱歉，登录过期了");
             return false;
         }
 
@@ -44,4 +44,14 @@ public class LoginInterceptor implements HandlerInterceptor {
         redisUtil.expire(key, 30L, TimeUnit.MINUTES);
         return true;
     }
+    //编辑报错信息体
+    private void writeUnauthorizedResponse(HttpServletResponse response, String msg) throws Exception {
+        response.setStatus(401);
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"code\":401,\"msg\":\"" + msg + "\",\"data\":null}");
+        response.getWriter().flush();
+    }
+
+
 }

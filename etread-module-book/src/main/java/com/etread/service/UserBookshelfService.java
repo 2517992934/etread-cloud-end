@@ -1,6 +1,7 @@
 package com.etread.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.etread.entity.BookInfo;
 import com.etread.entity.UserBookshelf;
 
 import java.util.List;
@@ -16,4 +17,5 @@ public interface UserBookshelfService extends IService<UserBookshelf> {
     boolean setTop(String account, Long bookId, Integer isTop);
     List<UserBookshelf> listShelf(Long userId);
     List<UserBookshelf> listShelf(String account);
+    List<BookInfo> listSubscribedBooksByUserId(Long userId);
 }
