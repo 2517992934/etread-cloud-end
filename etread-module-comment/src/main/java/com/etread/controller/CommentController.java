@@ -55,10 +55,11 @@ public class CommentController {
         ParagraphCommentVO vo = commentPublishService.publish(dto);
         return Result.success("发布成功", vo);
     }
-
+    /*
+    *param:commentid,chapterid
+     */
     @PostMapping("/like")
-    public Result<CommentLikeVO> like(@RequestHeader("token") String token,
-                                      @RequestBody @Valid CommentLikeReq req) {
+    public Result<CommentLikeVO> like(@RequestHeader("token") String token, CommentLikeReq req) {
         Long userId = commentUserResolver.requireUserId(token);
         CommentLikeDTO dto = new CommentLikeDTO();
         dto.setChapterId(req.getChapterId());
@@ -69,8 +70,7 @@ public class CommentController {
     }
 
     @PostMapping("/unlike")
-    public Result<CommentLikeVO> unlike(@RequestHeader("token") String token,
-                                        @RequestBody @Valid CommentLikeReq req) {
+    public Result<CommentLikeVO> unlike(@RequestHeader("token") String token, CommentLikeReq req) {
         Long userId = commentUserResolver.requireUserId(token);
         CommentLikeDTO dto = new CommentLikeDTO();
         dto.setChapterId(req.getChapterId());
@@ -81,8 +81,7 @@ public class CommentController {
     }
 
     @PostMapping("/chapter")
-    public Result<ChapterCommentResultVO> queryChapter(@RequestHeader("token") String token,
-                                                       @RequestBody @Valid ChapterCommentQueryReq req) {
+    public Result<ChapterCommentResultVO> queryChapter(@RequestHeader("token") String token, ChapterCommentQueryReq req) {
         Long userId = commentUserResolver.requireUserId(token);
         ChapterCommentQueryDTO dto = new ChapterCommentQueryDTO();
         dto.setBookId(req.getBookId());

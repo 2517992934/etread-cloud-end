@@ -38,8 +38,8 @@ public class BookParseServiceImpl implements BookParseService {
     private Executor executor;
 
     @Autowired private ParserFactory parserFactory;
-    @Autowired private BookBatchProcessor batchProcessor; // 注入咱们的苦力工头
-    @Autowired private BookInfoServiceImpl bookInfoService;  // 注入书籍信息Service用来更新状态
+    @Autowired private BookBatchProcessor batchProcessor;
+    @Autowired private BookInfoServiceImpl bookInfoService;
 
     @Override
     public void parseBookConcurrently(BookInfoDTO bookInfoDTO) {
