@@ -1,0 +1,120 @@
+server:
+  port: 8722
+
+spring:
+  main:
+    web-application-type: reactive
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      timeout: 3000ms
+  codec:
+    max-in-memory-size: 2MB
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 3000
+        response-timeout: 5s
+      discovery:
+        locator:
+          enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: info
+    reactor.netty.http.client: warn
+    com.etread.gateway: debug
+
+etread:
+  gateway:
+    cors:
+      allowedOrigins:
+        - http://localhost:5173
+        - http://127.0.0.1:5173
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowedHeaders:
+        - "*"
+      allowCredentials: true
+      maxAge: 3600
+    blacklist:
+      enabled: true
+      ipList: []
+      tokenList: []
+      accountList: []
+    ratelimit:
+      rules:
+        login:
+          windowSeconds: 60
+          maxRequests: 5
+          lockSeconds: 300
+          keyStrategy: account_ip
+          mode: lockable
+        bookRead:
+          windowSeconds: 3
+          maxRequests: 10
+          lockSeconds: 0
+          keyStrategy: user_uri
+          mode: rejectOnly
+        commentAction:
+          windowSeconds: 10
+          maxRequests: 5
+          lockSeconds: 0
+          keyStrategy: user_uri
+          mode: rejectOnly
+    dynamic:
+      routes:
+        - id: book-service
+          uri: lb://etread-module-book
+          predicates:
+            - Path=/api/book/**
+          filters:
+            - RewritePath=/api/book/?(?<segment>.*), /book/${segment}
+          metadata:
+            authRequired: true
+            rateLimitRule: bookRead
+            timeoutGroup: read
+        - id: user-login-service
+          uri: lb://etread-user
+          predicates:
+            - Path=/api/auth/login
+          filters:
+            - RewritePath=/api/auth/login, /auth/login
+          metadata:
+            authRequired: false
+            rateLimitRule: login
+            timeoutGroup: auth
+        - id: user-auth-service
+          uri: lb://etread-user
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/?(?<segment>.*), /auth/${segment}
+          metadata:
+            authRequired: false
+            timeoutGroup: auth
+        - id: comment-service
+          uri: lb://etread-module-comment
+          predicates:
+            - Path=/api/comment/**
+          filters:
+            - RewritePath=/api/comment/?(?<segment>.*), /comment/${segment}
+          metadata:
+            authRequired: true
+            rateLimitRule: commentAction
+            timeoutGroup: write

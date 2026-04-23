@@ -310,11 +310,12 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
         LambdaQueryWrapper<BookTagRelation> tagWrapper = new LambdaQueryWrapper<>();
         tagWrapper.eq(BookTagRelation::getBookId, bookId);
         bookTagRelationMapper.delete(tagWrapper);
-//
-//        // 3. 删除书籍章节（级联删除章节及内容）
-//        bookChapterService.removeByBookId(bookId);
 
-        // 3. 删除书籍基本信息
+        // 3. 删除书籍章节（级联删除章节及内容）
+        bookChapterService.removeByBookId(bookId);
+        //4.
+
+        // . 删除书籍基本信息
         return this.removeById(bookId);
     }
 

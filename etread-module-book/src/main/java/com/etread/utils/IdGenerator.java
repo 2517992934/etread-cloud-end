@@ -9,7 +9,12 @@ public class IdGenerator {
      * 生成书名6位id
      */
     public static Long generateId() {
-        return ThreadLocalRandom.current().nextLong(100_000, 1_000_000);
+
+        // 拿到当前时间的分钟级表示（保证趋势递增）
+        long timePart = (System.currentTimeMillis() / 60000) % 100000;
+        // 加上3位随机数（减少碰撞概率）
+        int randomPart = ThreadLocalRandom.current().nextInt(100, 999);
+        return Long.parseLong(timePart + "" + randomPart);
     }
 
     /**

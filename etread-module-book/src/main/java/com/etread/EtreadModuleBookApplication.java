@@ -3,6 +3,7 @@ package com.etread;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -13,6 +14,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @SpringBootApplication(scanBasePackages = "com.etread") // 1. 扩大扫描范围，能抓到 common 里的 MinioUtil
 @MapperScan("com.etread.mapper")
 @EnableScheduling
+@EnableDiscoveryClient
 public class EtreadModuleBookApplication {
 
     public static void main(String[] args) {
