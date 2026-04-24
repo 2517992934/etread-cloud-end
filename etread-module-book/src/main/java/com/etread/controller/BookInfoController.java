@@ -9,6 +9,9 @@ import com.etread.vo.BookSearchVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.etread.entity.BookTag;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/book")
@@ -21,6 +24,10 @@ public class BookInfoController {
     @Autowired
     private BookInfoServiceImpl bookInfoServiceImpl;
 
+    @GetMapping("/tags")
+    public Result<List<BookTag>> listAllTags() {
+        return Result.success("获取标签成功", bookInfoService.listAllTags());
+    }
     @GetMapping("/info/{bookId}")
     public Result<BookInfoBaseVO> info(@PathVariable Long bookId) {
         BookInfoBaseVO vo = bookInfoMapper.selectBaseById(bookId);

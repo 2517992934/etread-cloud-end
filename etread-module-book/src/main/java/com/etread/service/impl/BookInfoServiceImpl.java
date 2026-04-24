@@ -69,6 +69,12 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
                 .set(errorMsg != null, BookInfo::getErrorMsg, errorMsg)
                 .update();
     }
+    @Override
+    public List<BookTag> listAllTags() {
+        LambdaQueryWrapper<BookTag> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByAsc(BookTag::getId);
+        return bookTagMapper.selectList(wrapper);
+    }
 
     public BookInfoDTO buildBookInfoDTO(BookUploadDTO book, String token) {
         MultipartFile file = book.getFile();
@@ -173,7 +179,7 @@ public class BookInfoServiceImpl extends ServiceImpl<BookInfoMapper, BookInfo> i
 
 
     /**
-     * 私有方法：保存标签并建立关联
+     * 私有方法：搜索标签
      * 标签存储
      */
     private void saveTags(Long bookId, List<String> tags) {

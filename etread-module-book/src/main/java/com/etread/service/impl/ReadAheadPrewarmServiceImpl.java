@@ -66,7 +66,7 @@ public class ReadAheadPrewarmServiceImpl implements ReadAheadPrewarmService {
         }
 
         List<Long> nextChapterIds = nextChapters.stream()
-                .map(BookChapter::getId)
+                .map(BookChapter::getBookId)
                 .collect(Collectors.toList());
         List<BookChapterContent> contents = bookChapterContentService.listByChapterIds(nextChapterIds);
         for (BookChapterContent content : contents) {

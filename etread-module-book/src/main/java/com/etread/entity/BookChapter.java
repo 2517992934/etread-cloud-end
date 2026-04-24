@@ -9,7 +9,6 @@ import java.util.Date;
 public class BookChapter {
     @TableId(type = IdType.AUTO)
     private Long id;
-    
     private Long bookId;
     private String chapterTitle;
     private Integer sortOrder;

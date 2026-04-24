@@ -32,7 +32,7 @@ public class BookChapterServiceImpl extends ServiceImpl<BookChapterMapper, BookC
         // 1. 查询该书所有章节 ID
         LambdaQueryWrapper<BookChapter> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BookChapter::getBookId, bookId)
-                    .select(BookChapter::getId);
+                    .select(BookChapter::getBookId);
         
         List<Object> ids = this.baseMapper.selectObjs(queryWrapper);
         

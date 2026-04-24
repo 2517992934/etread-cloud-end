@@ -2,6 +2,7 @@ package com.etread.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -11,10 +12,10 @@ public class AuthorBookCreateDTO {
     @NotBlank(message = "书名不能为空")
     private String title;
 
-    @NotBlank(message = "作者名不能为空")
-    private String author;
-
-    private String coverUrl;
+    /**
+     * 封面文件，创建草稿时直接上传到 MinIO。
+     */
+    private MultipartFile cover;
 
     private String description;
 

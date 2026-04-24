@@ -48,4 +48,5 @@ public class IdGenerator {
         // 3. 拼接并返回
         return Long.parseLong(prefix + suffix);
     }
+
 }

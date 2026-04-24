@@ -6,6 +6,9 @@ import com.etread.dto.BookInfoDTO;
 import com.etread.dto.BookSearchDTO;
 import com.etread.dto.BookUploadDTO;
 import com.etread.entity.BookInfo;
+import com.etread.entity.BookTag;
+
+import java.util.List;
 
 /**
  * 书籍信息业务接口
@@ -26,4 +29,8 @@ public interface BookInfoService extends IService<BookInfo> {
     long countwordbyBookId(Long bookId);
     Page<BookInfo> searchBook(BookSearchDTO bookSearchDTO, int page,int size);
     BookInfo getBookById(Long bookId);
+    /**
+     * 返回所有可选tag
+     */
+    List<BookTag> listAllTags();
 }
