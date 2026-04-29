@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(mvn -pl etread-module-book -am clean compile)",
+      "Bash(./mvnw clean *)"
+    ]
+  }
+}

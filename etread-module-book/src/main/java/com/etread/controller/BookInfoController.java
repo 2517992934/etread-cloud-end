@@ -3,6 +3,7 @@ package com.etread.controller;
 import com.etread.Result;
 import com.etread.dto.BookSearchDTO;
 import com.etread.mapper.BookInfoMapper;
+import com.etread.service.BookHotService;
 import com.etread.service.impl.BookInfoServiceImpl;
 import com.etread.vo.BookInfoBaseVO;
 import com.etread.vo.BookSearchVo;
@@ -23,6 +24,8 @@ public class BookInfoController {
     private BookInfoServiceImpl bookInfoService;
     @Autowired
     private BookInfoServiceImpl bookInfoServiceImpl;
+    @Autowired
+    private BookHotService bookHotService;
 
     @GetMapping("/tags")
     public Result<List<BookTag>> listAllTags() {
@@ -43,6 +46,7 @@ public class BookInfoController {
             vo.setAverageScore(totalScore / (double) ratingCount);
             vo.setTotalScore(null);
         }
+        bookHotService.incrementHotScore(bookId, 1.0);
         return Result.success("查询成功", vo);
     }
 
